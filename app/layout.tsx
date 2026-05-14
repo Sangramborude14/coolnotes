@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { PlusCircle, FileText,Globe, Settings } from "lucide-react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,41 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="flex h-screen overflow-hidden">
+        <aside className="w-72 border-r border-border bg-white flex flex-col">
+          <div className="p-8 font-bold text-2xl tracking-tighter text-primary">
+            DevNotes
+          </div>
+           <nav className="flex-1 px-4 py-2 flex flex-col gap-1">
+
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600  duration-200 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer group">
+            <PlusCircle size={20} className="group-hover:scale-110 transition-transform"/>
+            <span className="font-medium"> Create Note</span>
+            </div>
+
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer group">
+          <FileText size={20} className="group-hover:scale-110 transition-transform"/>
+          <span className="font-medium">My Notes</span>  
+          </div>
+          
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600  duration-200 hover:bg-primary/10 hover:text-primary transition-all  cursor-pointer group">
+          <Globe size={20} className="group-hover:scale-110 transition-transform"/>
+          <span className="font-medium">Public Notes</span>
+          </div>
+
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600  duration-200 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer group">
+          <Settings size={20} className="group-hover:scale-110 transition-transform"/>
+          <span className="font-medium">Settings</span>
+          </div>
+
+        </nav>
+        </aside>
+       
+
+        <main className="flex-1 overflow-y-auto bg-background p-8">
+          {children}
+        </main>
+      </body>
     </html>
   );
 }
