@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { MongoClient } from "mongodb";
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 
@@ -17,3 +18,6 @@ cached.promise = mongoose.connect(MONGODB_URI).then((m) => m);
 cached.conn = await cached.promise;
 return cached.conn; 
 }
+
+const client = new MongoClient(MONGODB_URI);
+export const db = client.db();
