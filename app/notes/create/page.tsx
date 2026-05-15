@@ -6,14 +6,28 @@ export default function CreateNote(){
     const [title,setTitle] = useState("");
     const [content,setContent] = useState("");
 
-    const handleSave = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const res = await fetch("/api/notes",{
+   const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault(); // Prevents page reload
+    
+    try {
+        const res = await fetch("/api/notes", {
             method: "POST",
-            body: JSON.stringify({heading:title,content:content})
-        })
-        if (res.ok) alert("saved to database")
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ heading: title, content: content })
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+            alert("Saved successfully! 🚀");
+        } else {
+            alert(`Error: ${result.error || "Failed to save"}`);
+        }
+    } catch (error) {
+        alert("Network error: Could not reach the server.");
     }
+};
+
 
     return(
         <>
@@ -23,7 +37,7 @@ export default function CreateNote(){
             Create the coolest note possible
             </h1>
         <div>
-            <form>
+            <form onSubmit={handleSave}>
                 <input type="text" id="heading" name="heading" placeholder="Heading" onChange={(e) => setTitle(e.target.value)}
                  className="border-none bg-transparent text-5xl font-bold
                             focus:outline-none text-center w-full mb-8"/>
@@ -32,7 +46,7 @@ export default function CreateNote(){
                 </textarea>
                 
                 <div>
-                    <button type="submit" className="border-2 border-white  hover:bg-primary mt-4 p-2 hover:scale-105 transition-all duration-200 transform " onClick={handleSave}>SAVE</button>
+                    <button type="submit" className="border-2 border-white  hover:bg-primary mt-4 p-2 hover:scale-105 transition-all duration-200 transform ">SAVE</button>
                 </div>
             </form>
         </div>

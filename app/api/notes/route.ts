@@ -24,7 +24,7 @@ export async function POST(req: Request){
             noteId: Date.now() + heading.replace(/\s+/g,'-'),
             heading,
             content,
-            isPrivate: true
+            private: true
         })
         return NextResponse.json(newNote,{status: 201});
 }catch(error){
