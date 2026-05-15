@@ -68,13 +68,18 @@ sequenceDiagram
     Browser UI->>User: Alert "Saved Successfully" & Redirect to Dashboard
 ```
 
-### 3. The Data Retrieval Flow (Database to Dashboard)
-*(Currently in Development)*
-1. **Dashboard Load**: The user navigates to `/`.
-2. **Fetch Trigger**: A React `useEffect` or Server Component calls `GET /api/notes`.
+### 3. The Data Retrieval Flow (Database to Dashboard & My Notes)
+1. **Navigation**: The user navigates to `/notes/mynotes` or the Dashboard (`/`).
+2. **Fetch Trigger**: A React `useEffect` calls `GET /api/notes` on component mount.
 3. **Session Verification**: The API validates the user to ensure data privacy.
-4. **Query Execution**: Mongoose executes `Note.find({ username: current_user }).sort({ createdAt: -1 })`.
-5. **Render Cycle**: The returned JSON array is mapped into dynamic `Card` components, calculating heights and displaying statistics.
+4. **Query Execution**: Mongoose executes `Note.find({ username: current_user })`.
+5. **Render Cycle**: The returned JSON array updates the React state, mapping the data into dynamic `flex` containers with a consistent height, ensuring all notes align perfectly in the grid regardless of content length.
+
+### 4. The Deletion Flow (Optimistic Updates)
+1. **User Action**: User clicks the "Trash" icon on a specific note.
+2. **API Call**: A `DELETE` request is sent to `/api/notes` with the `noteId`.
+3. **Optimistic UI Update**: The frontend immediately uses `.filter()` to remove the note from the local React state, causing it to instantly disappear from the screen without waiting for a full page reload.
+4. **Database Execution**: The backend uses `Note.findOneAndDelete` to remove the record permanently.
 
 ---
 
@@ -101,7 +106,8 @@ coolnotes/
 │   ├── login/page.tsx               # Client component for user authentication
 │   ├── signup/page.tsx              # Client component for user registration
 │   ├── notes/
-│   │   └── create/page.tsx          # Note editor UI interface
+│   │   ├── create/page.tsx          # Note editor UI interface
+│   │   └── mynotes/page.tsx         # User's personal notes grid view
 │   ├── globals.css                  # Core CSS variables, Tailwind tokens, and .glass classes
 │   ├── layout.tsx                   # Server-side Root Layout (Injects fonts & Sidebar)
 │   └── page.tsx                     # Main Dashboard / UI Analytics View
