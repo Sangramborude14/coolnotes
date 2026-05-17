@@ -23,9 +23,9 @@ export default function BarCard({
     <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 shadow-2xl w-90">
       <h1 className="text-white text-xl font-bold mb-6">Best Picks</h1>
       <div className="flex items-end justify-around h-40 gap-4 border-b border-white/20 pb-2">
-         <Bar label="Note A" value={note1} height = {getHeight(note1) } color="bg-blue-500"/>
-         <Bar label="Note B" value={note2} height = {getHeight(note2)} color="bg-green-500"/>
-         <Bar label="Note C" value={note3} height = {getHeight(note3)} color="bg-red-500"/>
+         <Bar label={label1} value={note1} height = {getHeight(note1) } color="bg-blue-500"/>
+         <Bar label={label2} value={note2} height = {getHeight(note2)} color="bg-green-500"/>
+         <Bar label={label3} value={note3} height = {getHeight(note3)} color="bg-red-500"/>
       </div>
     </div>
   )
