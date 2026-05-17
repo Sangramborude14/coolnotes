@@ -1,14 +1,14 @@
 # 📓 CoolNotes - Premium Full-Stack Note Taking Application
 
-CoolNotes is a high-performance, aesthetically premium full-stack note-taking application. It is engineered using the latest React and Next.js paradigms, focusing on a seamless user experience, secure authentication, and a robust database architecture.
+CoolNotes is a high-performance, aesthetically premium full-stack note-taking application. It is engineered using the latest React and Next.js paradigms, focusing on a seamless user experience, secure authentication, real-time study tracking, and a robust database architecture.
 
 ---
 
 ## 🚀 Comprehensive Tech Stack
 
 ### Frontend Architecture
-- **Framework**: **Next.js 16.2.6 (App Router)** - Utilizing Server Components for layout and data fetching, and Client Components for interactive UI elements.
-- **Library**: **React 19.2** - Using modern hooks (`useState`, `useEffect`) and strict mode.
+- **Framework**: **Next.js 16.2.6 (App Router)** - Utilizing Server Components for layout, data fetching, and the dashboard, and Client Components for interactive UI elements.
+- **Library**: **React 19** - Using modern hooks (`useState`, `useEffect`, `useRef`, `use`) and strict mode.
 - **Styling**: **Tailwind CSS 4** - Implementing a custom design system based on CSS variables (HSL) for themes. Features a heavy emphasis on "Glassmorphism" (semi-transparent blurred backgrounds), micro-animations (hover scaling, transitions), and deep dark/light mode compatibility.
 - **Icons**: **Lucide React** - For consistent, scalable vector iconography across the application (sidebar, buttons).
 
@@ -19,79 +19,54 @@ CoolNotes is a high-performance, aesthetically premium full-stack note-taking ap
 ### Database & Authentication
 - **Primary Database**: **MongoDB** (Atlas Cloud).
 - **ORM / ODM Strategy**: A sophisticated **Hybrid Approach**:
-  - **MongoClient (Native)**: Used strictly by the Authentication adapter for maximum performance and low-level control over user/session collections.
-  - **Mongoose**: Used for application business logic (Notes, Categories) to leverage strict schema validation, type casting, and middleware.
-  - **Connection Pooling**: Implemented a global connection caching utility (`lib/db.ts`) to prevent connection flooding during Next.js Hot Module Replacement (HMR).
-- **Auth Provider**: **Better Auth (^1.6.11)** - Handling complex authentication flows (Email/Password & Google OAuth) with session management and cryptographic security. Assisted by `@better-fetch/fetch` for edge-compatible session verification.
+  - **MongoClient (Native)**: Used strictly by the Authentication adapter for maximum performance.
+  - **Mongoose**: Used for application business logic (Notes, StudyLogs) to leverage strict schema validation, type casting, and middleware.
+  - **Connection Pooling**: Implemented a global connection caching utility (`lib/db.ts`) to prevent connection flooding.
+- **Auth Provider**: **Better Auth (^1.6.11)** - Handling complex authentication flows (Email/Password) with session management and cryptographic security.
 
 ---
 
-## 🏗️ Detailed Application Flow & Network Architecture
+## 🏗️ Detailed Application Flow & Features
 
-The application operates on a strict separation of concerns. Here is the minute-by-minute lifecycle of data within the app.
+### 1. The Dynamic Study Dashboard
+The application features a powerful, Server-Rendered dashboard that tracks your productivity in real-time.
+- **Server-Side Fetching**: The dashboard (`components/DashboardStats.tsx`) connects directly to MongoDB on the server to securely fetch note counts and study durations without client-side lag.
+- **Real-Time Study Tracking**: When viewing a note, a client-side timer records the exact duration spent reading. On unmount, a background `keepalive` fetch securely logs the session to the database.
+- **Dynamic Charting**: Automatically calculates total "Weekly Study Time" and generates a "Best Picks" graph sorting your most-studied notes dynamically.
 
-### 1. The Authentication Lifecycle (AuthN & AuthZ)
+### 2. The Authentication Lifecycle (AuthN & AuthZ)
+1. **User Action**: User enters credentials in `app/signup/page.tsx`.
+2. **Backend Processing**: The request hits the Better Auth catch-all route `app/api/auth/[...all]/route.ts`.
+3. **Cookie Placement**: The server responds with an HTTP-only secure cookie containing the session ID.
+4. **Route Protection**: Every time a user requests a page, `middleware.ts` intercepts the request and verifies the session.
 
-**Sign Up / Login Flow:**
-1. **User Action**: User enters credentials in `app/signup/page.tsx` or clicks "Continue with Google".
-2. **Client Request**: `authClient.signUp.email()` or `signIn.social()` is triggered.
-3. **Backend Processing**: The request hits the Better Auth catch-all route `app/api/auth/[...all]/route.ts`.
-4. **Database Write**: The MongoDB Adapter creates a new document in the `user` collection and generates a secure session token in the `session` collection.
-5. **Cookie Placement**: The server responds with an HTTP-only secure cookie containing the session ID.
-6. **Redirection**: On success, `next/navigation`'s `useRouter` pushes the client to the `/` dashboard.
-
-**Route Protection (Authorization Guard):**
-1. **Intercept**: Every time a user requests a page (e.g., `/`), `middleware.ts` intercepts the request.
-2. **Session Verification**: The middleware uses `betterFetch("/api/auth/get-session")` to validate the cookie against the database.
-3. **Decision Matrix**:
-   - If *No Session* AND trying to access protected route -> Redirect to `/login`.
-   - If *Valid Session* -> Proceed to `NextResponse.next()` (render the page).
-
-### 2. The Note Creation Flow (Frontend to Database)
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Browser UI (CreateNote)
-    participant Next.js API (/api/notes)
-    participant Auth Module
-    participant MongoDB (Mongoose)
-
-    User->>Browser UI: Types Heading & Content
-    User->>Browser UI: Clicks "SAVE"
-    Browser UI->>Next.js API: POST JSON {heading, content}
-    Next.js API->>Auth Module: Verify Session Cookie
-    Auth Module-->>Next.js API: Return Session Object (User Data)
-    Next.js API->>MongoDB (Mongoose): Note.create({ username, noteId, ... })
-    MongoDB (Mongoose)-->>Next.js API: Return Saved Document
-    Next.js API-->>Browser UI: 201 Created (JSON Response)
-    Browser UI->>User: Alert "Saved Successfully" & Redirect to Dashboard
-```
-
-### 3. The Data Retrieval Flow (Database to Dashboard & My Notes)
-1. **Navigation**: The user navigates to `/notes/mynotes` or the Dashboard (`/`).
-2. **Fetch Trigger**: A React `useEffect` calls `GET /api/notes` on component mount.
-3. **Session Verification**: The API validates the user to ensure data privacy.
-4. **Query Execution**: Mongoose executes `Note.find({ username: current_user })`.
-5. **Render Cycle**: The returned JSON array updates the React state, mapping the data into dynamic `flex` containers with a consistent height, ensuring all notes align perfectly in the grid regardless of content length.
+### 3. The Note Creation & Edit Flow
+- **Creation**: Users create notes (Private or Public) via a streamlined form. The backend links the note to the authenticated session user.
+- **Editing**: Utilizes Next.js dynamic routing (`/notes/edit/[noteId]`). The client un-wraps dynamic parameters using React 19's `use(params)` hook, populates a controlled form with the existing data via a `GET` request, and pushes partial updates via a RESTful `PATCH` request.
 
 ### 4. The Deletion Flow (Optimistic Updates)
-1. **User Action**: User clicks the "Trash" icon on a specific note.
-2. **API Call**: A `DELETE` request is sent to `/api/notes` with the `noteId`.
-3. **Optimistic UI Update**: The frontend immediately uses `.filter()` to remove the note from the local React state, causing it to instantly disappear from the screen without waiting for a full page reload.
-4. **Database Execution**: The backend uses `Note.findOneAndDelete` to remove the record permanently.
+1. **API Call**: A `DELETE` request is sent to `/api/notes`.
+2. **Optimistic UI Update**: The frontend immediately uses `.filter()` to remove the note from the local React state, causing it to instantly disappear from the screen.
+3. **Database Execution**: The backend permanently deletes the record.
 
 ---
 
 ## 🗄️ Database Schema Breakdown
 
 ### The `Note` Schema (`lib/models/Note.ts`)
-The core data structure relies on strict typing to prevent dirty data:
-- `username` *(String, Required)*: The Better Auth username. Acts as the foreign key linking notes to the creator.
-- `noteId` *(String, Required, Unique)*: A composite key generated via `Date.now() + formatted_heading` to ensure collision-free URLs or referencing.
+- `username` *(String, Required)*: The creator's username. Acts as the link connecting the user to the note.
+- `noteId` *(String, Required, Unique)*: A composite key generated via `Date.now() + formatted_heading`.
 - `heading` *(String, Required)*: The title of the note.
 - `content` *(String, Optional)*: The body text of the note.
-- `private` *(Boolean, Required)*: Defaults to true. Determines visibility in the "Public Space" feature.
+- `private` *(Boolean, Required)*: Determines visibility in the "Public Space".
+- `studyTime` *(Number)*: Legacy/aggregate study time tracker.
+
+### The `StudyLog` Schema (`lib/models/StudyLogs.ts`)
+- `username` *(String, Required)*: The user who studied.
+- `noteId` *(String, Required)*: The note being read.
+- `noteHeading` *(String, Required)*: Cached heading for high-performance dashboard charts without needing database joins.
+- `duration` *(Number, Required)*: Time spent in seconds.
+- `createdAt` *(Date)*: Timestamp to filter by week.
 
 ---
 
@@ -102,26 +77,24 @@ coolnotes/
 ├── app/
 │   ├── api/
 │   │   ├── auth/[...all]/route.ts  # Better Auth Core API endpoints
-│   │   └── notes/route.ts           # Custom REST API for CRUD operations on Notes
-│   ├── login/page.tsx               # Client component for user authentication
-│   ├── signup/page.tsx              # Client component for user registration
+│   │   ├── notes/[noteId]/route.ts # Custom REST API (GET, PATCH, DELETE)
+│   │   └── study-time/route.ts      # Study timer telemetry endpoint
 │   ├── notes/
 │   │   ├── create/page.tsx          # Note editor UI interface
+│   │   ├── edit/[noteId]/page.tsx   # Dynamic note updater
+│   │   ├── [noteId]/page.tsx        # Note viewer & study timer hook
+│   │   ├── publicnotes/page.tsx     # Global public notes viewer
 │   │   └── mynotes/page.tsx         # User's personal notes grid view
-│   ├── globals.css                  # Core CSS variables, Tailwind tokens, and .glass classes
-│   ├── layout.tsx                   # Server-side Root Layout (Injects fonts & Sidebar)
-│   └── page.tsx                     # Main Dashboard / UI Analytics View
+│   ├── layout.tsx                   # Server-side Root Layout
+│   └── page.tsx                     # Main Router Guard & Layout wrapper
 ├── components/
-│   ├── Sidebar.tsx                  # Client component for navigation and Logout logic
+│   ├── DashboardStats.tsx           # Server Component for dynamic study graphs
 │   └── barCard.tsx                  # Dynamic data visualization component
 ├── lib/
-│   ├── auth.ts                      # Better Auth Server Configuration & Providers
-│   ├── auth-client.ts               # Better Auth Client Hook initializer
-│   ├── db.ts                        # Global MongoDB/Mongoose connection manager
-│   └── models/
-│       └── Note.ts                  # Mongoose Schema definition for notes
-├── middleware.ts                    # Edge-runtime authentication routing guard
-└── tailwind.config.ts               # Custom UI tokens, colors, and border radiuses
+│   ├── auth.ts                      # Better Auth Server Configuration
+│   ├── db.ts                        # Global MongoDB connection manager
+│   └── models/                      # Mongoose Schemas (Note, StudyLogs)
+└── middleware.ts                    # Edge-runtime authentication guard
 ```
 
 ---
@@ -129,7 +102,7 @@ coolnotes/
 ## 🎨 UI/UX Design Philosophy
 
 The application strictly adheres to a **Modern Premium** aesthetic:
-1. **Typography**: Uses Next.js optimized Google Fonts (`Geist` and `Geist_Mono`) for sharp, legible text.
-2. **Color Palette**: Relies on specific HSL values for `background`, `foreground`, `border`, and `primary` to allow seamless dark-mode transitions.
-3. **Glassmorphism**: The `.glass` utility class combines semi-transparent backgrounds (`bg-white/50`), strong backdrop blurs, and subtle white borders to create a frosted glass effect layered over gradients.
-4. **Interactive Feedback**: Every button and link includes `transition-all`, `hover:scale-105`, and group-hover transforms on icons to make the application feel responsive and "alive."
+1. **Typography**: Uses Next.js optimized Google Fonts (`Geist`) for sharp, legible text.
+2. **Color Palette**: Relies on specific HSL values for seamless dark-mode transitions.
+3. **Glassmorphism**: Semi-transparent backgrounds (`bg-white/5`), strong backdrop blurs, and subtle white borders create a frosted glass effect.
+4. **Interactive Feedback**: Every button and link includes `transition-all`, `hover:scale-105`, and group-hover transforms to make the application feel responsive and "alive."
