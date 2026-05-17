@@ -1,11 +1,21 @@
 interface StuduHours {
     note1: number;
+    label1 ?: string;
     note2: number;
+    label2 ?: string;
     note3: number;
+    label3 ?: string;
 }
 
 
-export default function BarCard({note1,note2,note3}:StuduHours){
+export default function BarCard({
+  note1,
+  label1 = "Note A",
+  note2,
+  label2 = "Note B",
+  note3,
+  label3 = "Note C"
+}:StuduHours){
     const maxHours = Math.max(note1,note2,note3,1);
     const getHeight = (hours: number) => (hours/maxHours) * 100
   
