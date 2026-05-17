@@ -6,7 +6,8 @@ const NoteSchema = new mongoose.Schema({
     noteId: {type:String,required: true,unique: true},
     heading:{type:String,required: true,unique: false},
     content: {type:String,required: false,unique: false},
-    private: {type:Boolean,required: true,unique:false}
+    private: {type:Boolean,required: true,unique:false},
+    studyTime: {type: Number,default:0,required:false}
 
 })
 

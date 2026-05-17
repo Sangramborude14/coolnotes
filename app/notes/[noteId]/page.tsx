@@ -1,11 +1,41 @@
 "use client"
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState,use } from "react";
+import { useEffect, useState,use,useRef } from "react";
 
 export default function ViewNote({ params } : { params: Promise<{noteId:string}>}){
 const [note,setNote] = useState<any>(null)
 const {noteId} = use(params)
+const headingRef = useRef("")
+
+useEffect(() => {
+    if(note?.heading){
+        headingRef.current = note.heading;
+    }
+},[note])
+
+useEffect(() => {
+    const startTime = Date.now();
+
+    return () => {
+        const endTime = Date.now();
+        const duration = Math.floor((endTime - startTime) / 1000);
+    
+        if (duration > 0 && headingRef.current) {
+            fetch("/api/study-time",{
+                method: "POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({
+                    noteId,
+                    noteHeading: headingRef.current,
+                    duration,
+                }),
+                keepalive: true
+            }).catch(err => console.error("failed to log study session,err"))
+        }
+    }
+
+},[noteId])
 
 useEffect(() => {
     async function getNote() {
