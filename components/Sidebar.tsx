@@ -23,7 +23,7 @@ export default function Sidebar() {
           <span className="font-medium">My Notes</span>  
           </Link>
           
-          <Link href="/notes/public" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600  duration-200 hover:bg-primary/10 hover:text-primary transition-all  cursor-pointer group">
+          <Link href="/notes/publicnotes" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600  duration-200 hover:bg-primary/10 hover:text-primary transition-all  cursor-pointer group">
           <Globe size={20} className="group-hover:scale-110 transition-transform"/>
           <span className="font-medium">Public Notes</span>
           </Link>

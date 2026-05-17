@@ -14,7 +14,7 @@ export default function CreateNote() {
             const res = await fetch("/api/notes", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ heading: title, content: content })
+                body: JSON.stringify({ heading: title, content: content,private: isPrivate})
             });
 
             const result = await res.json();

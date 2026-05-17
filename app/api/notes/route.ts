@@ -17,14 +17,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
         const body = await req.json();
-        const { heading, content } = body;
+        const { heading, content,private: isPrivate} = body;
 
         const newNote = await Note.create({
             username: session.user.name,
             noteId: Date.now() + heading.replace(/\s+/g, '-'),
             heading,
             content,
-            private: true
+            private: isPrivate !== undefined ? isPrivate: true 
         })
         return NextResponse.json(newNote, { status: 201 });
     } catch (error) {
