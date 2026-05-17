@@ -8,10 +8,10 @@ import BarCard from "@/components/barCard";
 import Card from "@/components/Card";
 
 
-export async function Home() {
+export default async function Home() {
   
   await connectToDatabase();
-  const session = await auth.api.getSession();
+  const session = await auth.api.getSession({headers: await headers()});
 
   if(!session){
     redirect("/login");
@@ -34,6 +34,7 @@ export async function Home() {
     if(!noteTimeMap[log.noteId]){
       noteTimeMap[log.noteId] = {heading: log.noteHeading,duration: 0}
     }
+    noteTimeMap[log.noteId].duration += log.duration;
   });
 
   const sortedNotes = Object.values(noteTimeMap).map(n => ({
