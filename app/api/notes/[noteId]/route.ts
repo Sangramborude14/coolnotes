@@ -15,7 +15,7 @@ export async function GET(req: Request, { params }: { params: { noteId: string }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ noteId: string }> }) {
     try {
-        await connectToDatabase();
+        await connectToDatabase();  
         const { noteId } = await params;
         const body = await req.json();
 
