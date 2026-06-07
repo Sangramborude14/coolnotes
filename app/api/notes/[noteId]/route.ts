@@ -2,7 +2,7 @@ import { connectToDatabase } from "@/lib/db";
 import { Note } from "@/lib/models/Note";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request, { params }: { params: { noteId: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ noteId: string }> }) {
     try {
         await connectToDatabase();
         const { noteId } = await params;
